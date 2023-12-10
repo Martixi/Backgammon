@@ -1,0 +1,3 @@
+C:/Users/admin/OneDrive/Pulpit/Backgammon/cmake-build-debug/CMakeFiles/Backgammon.dir
+C:/Users/admin/OneDrive/Pulpit/Backgammon/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/admin/OneDrive/Pulpit/Backgammon/cmake-build-debug/CMakeFiles/rebuild_cache.dir
