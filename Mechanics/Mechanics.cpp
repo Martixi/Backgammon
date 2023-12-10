@@ -32,6 +32,48 @@ void Dice(int currentPlayer, pole *poles, token *tokens, player *players) {
 	Move(value_1, value_2, currentPlayer, poles, tokens, players);
 }
 
+//Winning mechanism
+void WinnerCase(player *players, token *tokens,pole *poles, int currentPlayer){
+	if (HasPlayerWon(currentPlayer, tokens)){
+		int points = 1;
+		if (IsOtherPlayerNotInHouse(currentPlayer, tokens)) ++points;
+		if (IsEnemyTokenOnBar(currentPlayer, tokens)) ++points;
+		VictoryCommunicate(currentPlayer, points);
+		enter();
+		players[currentPlayer-1].score += points;
+		NewGame(poles, tokens);
+	}
+}
+
+bool HasPlayerWon(int currentPlayer, token *tokens){
+	for (int i = 0; i < TOKEN_AMOUNT; ++i) {
+		if (tokens[i].player == currentPlayer and tokens[i].index != HOME_INDEX){
+			return false;
+		}
+	}
+	return true;
+}
+
+bool IsOtherPlayerNotInHouse(int currentPlayer, token *tokens){
+	int otherPlayer = currentPlayer%2+1;
+	for (int i = 0; i < TOKEN_AMOUNT; ++i) {
+		if (tokens[i].player==otherPlayer and tokens[i].index == HOME_INDEX){
+			return false;
+		}
+	}
+	return true;
+}
+
+bool IsEnemyTokenOnBar(int currentPlayer, token *tokens){
+	int otherPlayer = currentPlayer%2+1;
+	for (int i = 0; i < TOKEN_AMOUNT; ++i) {
+		if (tokens[i].player == otherPlayer and tokens[i].index == 0){
+			return true;
+		}
+	}
+	return false;
+}
+
 //Choosing options of movement
 void Move(int diceOne, int diceTwo, int currentPlayer, pole *poles, token *tokens, player *players) {
 	if (diceTwo != diceOne) {
@@ -106,19 +148,19 @@ void MovingToken(int currentPlayer, int movingValue, pole *poles, token *tokens)
 		return;
 	}
 	if (ForcedPole!= 0){
-		ForcedStrike(currentPlayer, movingValue, poles, tokens, ForcedPole);
+		ForcedStrike(currentPlayer, movingValue, tokens, ForcedPole);
 		return;
 	}
-	if (FreeMovementPossible(currentPlayer,movingValue,poles,tokens)){
+	if (FreeMovementPossible(currentPlayer, movingValue, tokens)){
 		FreeMovement(currentPlayer, movingValue, poles, tokens);
 		return;
 	}
 }
 
 //required token strike
-void ForcedStrike(int currentPlayer, int movingValue, pole *poles, token *tokens, int input){
+void ForcedStrike(int currentPlayer, int movingValue, token *tokens, int input) {
 	if (currentPlayer == 1){
-		strikeToken(currentPlayer, movingValue, poles, tokens, input);
+		strikeToken(currentPlayer, movingValue, tokens, input);
 		for (int i = 0; i < TOKEN_AMOUNT; ++i) {
 			if (tokens[i].index == input) {
 				tokens[i].index = input+movingValue;
@@ -127,7 +169,7 @@ void ForcedStrike(int currentPlayer, int movingValue, pole *poles, token *tokens
 		}
 	}
 	if (currentPlayer == 2){
-		strikeToken(currentPlayer, movingValue, poles, tokens, input);
+		strikeToken(currentPlayer, movingValue, tokens, input);
 		for (int i = 0; i < TOKEN_AMOUNT; ++i) {
 			if (tokens[i].index == input) {
 				tokens[i].index = input-movingValue;
@@ -147,7 +189,7 @@ void FreeMovement(int currentPlayer, int movingValue, pole *poles, token *tokens
 	}
 	if (currentPlayer == 1) newIndex = PoleChosen + movingValue;
 	else newIndex = PoleChosen - movingValue;
-	strikeToken(currentPlayer, movingValue, poles, tokens, PoleChosen);
+	strikeToken(currentPlayer, movingValue, tokens, PoleChosen);
 	for (int i = 0; i < TOKEN_AMOUNT; ++i) {
 		if (tokens[i].index == PoleChosen) {
 			tokens[i].index = newIndex;
@@ -168,14 +210,14 @@ bool checkingAllConditions(int currentPlayer, int movingValue, pole *poles, toke
 	if(!checkIfCorrect(currentPlayer, tokens, input)) return false;
 	if(newIndex > 24 or newIndex <= 0) return false;
 	if(checkIfCorrect(OtherPlayer, tokens, newIndex)){
-		return strikeCondition(currentPlayer, movingValue, poles, tokens, input);
+		return strikeCondition(currentPlayer, movingValue, tokens, input);
 	}
 	return true;
 }
 
 //token striking function -
-void strikeToken(int currentPlayer, int movingValue, pole *poles, token *tokens, int input){
-	if (strikeCondition(currentPlayer, movingValue, poles, tokens, input)){
+void strikeToken(int currentPlayer, int movingValue, token *tokens, int input) {
+	if (strikeCondition(currentPlayer, movingValue, tokens, input)){
 		int newIndex;
 		if(currentPlayer == 1) newIndex = input + movingValue;
 		else newIndex = input - movingValue;
@@ -188,7 +230,7 @@ void strikeToken(int currentPlayer, int movingValue, pole *poles, token *tokens,
 }
 
 //Conditions for striking tokens
-bool strikeCondition(int currentPlayer, int movingValue, pole *poles, token *tokens, int input){
+bool strikeCondition(int currentPlayer, int movingValue, token *tokens, int input) {
 	int OtherPlayer = (currentPlayer)%2 + 1, newIndex;
 	if(currentPlayer == 1) newIndex = input + movingValue;
 	else newIndex = input - movingValue;
@@ -200,7 +242,7 @@ bool strikeCondition(int currentPlayer, int movingValue, pole *poles, token *tok
 
 //Prioritizing taking token off of bar - Handling
 void TakeTokenOffBar(int currentPlayer, int movingValue, pole *poles, token *tokens){
-	if(currentPlayer == 2) movingValue = INDEXES_AMOUNT+1-movingValue;
+	if(currentPlayer == 2) movingValue = INDEXES_AMOUNT-movingValue;
 	if(poles[movingValue-1].TokensOn == 0) {
 		TakeFromBar(tokens, movingValue, currentPlayer);
 	}
@@ -210,11 +252,14 @@ void TakeTokenOffBar(int currentPlayer, int movingValue, pole *poles, token *tok
 				TakeFromBar(tokens, movingValue, currentPlayer);
 				return;
 			}else if (tokens[i].index == movingValue and tokens[i].player != currentPlayer){
-				strikeTokenFromBar(currentPlayer, movingValue, poles, tokens);
+				strikeTokenFromBar(currentPlayer, movingValue, tokens);
+				poles[movingValue-1].TokensOn--;
 				if (poles[movingValue-1].TokensOn == 0) {
 					TakeFromBar(tokens, movingValue, currentPlayer);
+				}else{
+					DisplayInformation();
 				}
-				return DisplayInformation();
+				return;
 			}
 		}
 	}
@@ -240,8 +285,8 @@ void TakeFromBar(token *tokens, int movingValue, int currentPlayer) {
 }
 
 //Striking token with players token freshly taken off of bar
-void strikeTokenFromBar(int currentPlayer, int movingValue, pole *poles, token *tokens){
-	if (strikeConditionFromBar(currentPlayer, movingValue, poles, tokens)){
+void strikeTokenFromBar(int currentPlayer, int movingValue, token *tokens) {
+	if (strikeConditionFromBar(currentPlayer, movingValue, tokens)){
 		for (int i = 0; i < TOKEN_AMOUNT; ++i) {
 			if (tokens[i].index == movingValue){
 				tokens[i].index = 0;
@@ -252,7 +297,7 @@ void strikeTokenFromBar(int currentPlayer, int movingValue, pole *poles, token *
 }
 
 //Checking if it is possible to strike an enemy token with players token from Bar
-bool strikeConditionFromBar(int currentPlayer, int movingValue, pole *poles, token *tokens){
+bool strikeConditionFromBar(int currentPlayer, int movingValue, token *tokens) {
 	int OtherPlayer = (currentPlayer)%2 + 1;
 	if (SearchPolesCount(tokens, movingValue) == 1 and checkIfCorrect(OtherPlayer, tokens, movingValue)){
 		return true;
@@ -292,13 +337,14 @@ int pickAmount(){
 int PossibilityToStrike(int currentPlayer, int movingValue, pole *poles, token *tokens){
 	if (currentPlayer == 1){
 		for (int i = 0; i < INDEXES_AMOUNT; ++i) {
-			if (checkIfCorrect(currentPlayer, tokens, i+1) and IsNextPoleEnemies(currentPlayer, movingValue, poles, tokens, i+1)){
+			if (checkIfCorrect(currentPlayer, tokens, i+1) and IsNextPoleEnemies(currentPlayer, movingValue, tokens,
+			                                                                     i + 1)){
 				if (poles[i+movingValue].TokensOn == 1) return i+1;
 			}
 		}
 	} else{
 		for (int i = INDEXES_AMOUNT; i >0; --i) {
-			if (checkIfCorrect(currentPlayer, tokens, i) and IsNextPoleEnemies(currentPlayer, movingValue, poles, tokens, i)){
+			if (checkIfCorrect(currentPlayer, tokens, i) and IsNextPoleEnemies(currentPlayer, movingValue, tokens, i)){
 				if (poles[i-movingValue-1].TokensOn == 1) return i;
 			}
 		}
@@ -307,7 +353,7 @@ int PossibilityToStrike(int currentPlayer, int movingValue, pole *poles, token *
 }
 
 //Making sure next available pole belongs to enemy
-bool IsNextPoleEnemies(int currentPlayer, int movingValue, pole *poles, token *tokens, int currentPole){
+bool IsNextPoleEnemies(int currentPlayer, int movingValue, token *tokens, int currentPole) {
 	int OtherPlayer = currentPlayer%2 +1;
 	if (currentPlayer == 1) {
 		if (checkIfCorrect(OtherPlayer, tokens, currentPole + movingValue)) {
@@ -323,17 +369,18 @@ bool IsNextPoleEnemies(int currentPlayer, int movingValue, pole *poles, token *t
 }
 
 //skipping if no movement available
-bool FreeMovementPossible(int currentPlayer, int movingValue, pole *poles, token *tokens){
+bool FreeMovementPossible(int currentPlayer, int movingValue, token *tokens) {
 	if (currentPlayer == 1){
 		for (int i = 0; i < INDEXES_AMOUNT; ++i) {
-			if (checkIfCorrect(currentPlayer, tokens, i+1) and !(IsNextPoleEnemies(currentPlayer, movingValue, poles, tokens, i+1))){
+			if (checkIfCorrect(currentPlayer, tokens, i+1) and !(IsNextPoleEnemies(currentPlayer, movingValue, tokens,
+			                                                                       i + 1))){
 				if (i+1+movingValue > INDEXES_AMOUNT) return false;
 				return true;
 			}
 		}
 	} else{
 		for (int i = INDEXES_AMOUNT; i >0; --i) {
-			if (checkIfCorrect(currentPlayer, tokens, i) and !(IsNextPoleEnemies(currentPlayer, movingValue, poles, tokens, i))){
+			if (checkIfCorrect(currentPlayer, tokens, i) and !(IsNextPoleEnemies(currentPlayer, movingValue, tokens, i))){
 				if (i - movingValue <= 0)return false;
 				return true;
 			}
@@ -348,8 +395,8 @@ void MovingTokensToHome(int currentPlayer, int movingValue, pole *poles, token *
 	if (MovingValueFits(currentPlayer, movingValue,tokens))return;
 	if (TakeFurthest(currentPlayer, movingValue, tokens, Furthest))return;
 	int ForcedPole = PossibilityToStrike(currentPlayer, movingValue, poles, tokens);
-	if (ForcedPole!= 0) return ForcedStrike(currentPlayer, movingValue, poles, tokens, ForcedPole);
-	if (FreeMovementPossible(currentPlayer,movingValue,poles,tokens)) return FreeMovement(currentPlayer, movingValue, poles, tokens);
+	if (ForcedPole!= 0) return ForcedStrike(currentPlayer, movingValue, tokens, ForcedPole);
+	if (FreeMovementPossible(currentPlayer, movingValue, tokens)) return FreeMovement(currentPlayer, movingValue, poles, tokens);
 }
 
 //checks if moving value fits one of the tokens and moves it if it's true

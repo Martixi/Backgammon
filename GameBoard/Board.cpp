@@ -16,6 +16,14 @@ void BasicSetUp(pole *poles, token *pawns, player *players){
 	PlayerSetUp(players);
 }
 
+//Opening fresh game with counting points from prior games
+void NewGame(pole *poles, token *pawns){
+	SetVisuals();
+	Board_generation();
+	IndexGeneration(poles);
+	CreateTokens(pawns);
+}
+
 //Sole generation of borders and poles(with indexes)
 void Board_generation(){
 	Borders();
@@ -177,6 +185,7 @@ void TokensOnPoles(pole *poles){
 //Visualisation of tokens in players home's
 void Player_home(token *tokens){
 	gotoxy(BOARD_X+BOARD_WIDTH+5, BOARD_Y);
+	clreol();
 	cputs("Home, P1: ");
 	int count = 0;
 	for (int i = 0; i < TOKEN_AMOUNT; ++i) {
@@ -184,6 +193,7 @@ void Player_home(token *tokens){
 	}
 	cputs(IntToString(count));
 	gotoxy(BOARD_X+BOARD_WIDTH+5, BOARD_Y+BOARD_LENGTH);
+	clreol();
 	cputs("Home, P2: ");
 	count = 0;
 	for (int i = 0; i < TOKEN_AMOUNT; ++i) {

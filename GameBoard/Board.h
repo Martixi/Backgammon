@@ -15,6 +15,7 @@ struct pole{
 };
 
 void Board_generation();
+void NewGame(pole *poles, token *pawns);
 void Borders();
 void Poles();
 void PoleGenerator(int X_location, int Y_location);

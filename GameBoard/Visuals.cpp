@@ -157,7 +157,6 @@ void currentBoard(token *tokens, player *players, pole *poles, int leading){
 	SetVisuals();
 	Board_generation();
 	IndexGeneration(poles);
-	PlayerSetUp(players);
 	TokensSetUp(poles, tokens);
 	Score(players, leading);
 	Player_home(tokens);
@@ -169,9 +168,9 @@ void  TokenUpdate(token *tokens, player *players, pole *poles, int leading){
 	Poles();
 	Board_data();
 	IndexGeneration(poles);
-	PlayerSetUp(players);
 	TokensSetUp(poles, tokens);
 	Score(players, leading);
+	Player_home(tokens);
 }
 
 //Visual representation of tokens on bar
@@ -255,11 +254,34 @@ void DisplayInformation(){
 	textbackground(BLACK);
 	textcolor(BLUE);
 	enter();
-	gotoxy(INFO_X, INFO_Y);
+	gotoxy(BOARD_X, BOARD_Y + BOARD_LENGTH + 4);
+	clreol();
+	gotoxy(BOARD_X, BOARD_Y + BOARD_LENGTH + 5);
+	clreol();
 }
 
 //different color uses
 void colorChange(int text, int background){
 	textcolor(text);
 	textbackground(background);
+}
+
+//Information about players victory displayed to the screen
+void VictoryCommunicate(int currentPlayer, int points){
+	gotoxy(BOARD_X+10, BOARD_Y + (BOARD_LENGTH / 2));
+	colorChange(CYAN, BLACK);
+	cputs("Player ");
+	Translate(currentPlayer);
+	cputs(" has won");
+	gotoxy(BOARD_X + (BOARD_WIDTH / 2) + 9, BOARD_Y + (BOARD_LENGTH / 2));
+	cputs("He/She gains ");
+	Translate(points);
+	cputs(" point(s)");
+	gotoxy(BOARD_X, BOARD_Y + BOARD_LENGTH + 4);
+	clreol();
+	gotoxy(BOARD_X+26, BOARD_Y + BOARD_LENGTH + 4);
+	cputs("press ENTER to renew");
+	gotoxy(BOARD_X, BOARD_Y + BOARD_LENGTH + 5);
+	clreol();
+
 }

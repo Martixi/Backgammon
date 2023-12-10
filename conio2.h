@@ -10,7 +10,7 @@
 #define BLUE		1
 #define GREEN		2
 #define CYAN		3
-#define RED		4
+#define RED		    4
 #define MAGENTA		5
 #define BROWN		6
 #define LIGHTGRAY	7

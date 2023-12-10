@@ -25,5 +25,5 @@ void Score(player *players, int currentPlayer);
 void wrongInput();
 void DisplayInformation();
 void colorChange(int text, int background);
-void MovingToHomeInformation(int movingValue);
+void VictoryCommunicate(int currentPlayer, int points);
 #endif //BACKGAMMON_VISUALS_H

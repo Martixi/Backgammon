@@ -85,12 +85,6 @@ int PlayerPoleInput(){
 	return IndexOfPole;
 }
 
-//Finding minimal value
-int min(int a, int b){
-	if(a> b) return b;
-	return a;
-}
-
 //click enter to continue
 void enter(){
 	int input = '\0';

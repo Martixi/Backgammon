@@ -12,7 +12,7 @@
 void control(int input, token *tokens, player *players,pole *poles, int currentPlayer);
 char save(token *tokens, player *players, int activePlayer);
 void ReadSave(token *tokens, player *players, int *leading);
-void ScanTokens(token *tokens, int j, int id, int player, char symbol[3], int index);
+void ScanTokens(token *tokens, int j, int id, int player, const char symbol[3], int index);
 
 
 #endif //BACKGAMMON_USER_INPUT_H

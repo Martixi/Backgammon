@@ -55,7 +55,7 @@ void ReadSave(token *tokens, player *players, int *leading) {
 }
 
 //rewriting tokens info prior to the save
-void ScanTokens(token *tokens, int j, int id, int player, char symbol[3], int index){
+void ScanTokens(token *tokens, int j, int id, int player, const char symbol[3], int index){
 	char *memSymbol = new char [3];
 	tokens[j] = {.id = id, .player = player, .symbol=memSymbol, .index = index};
 	for ( int i = 0; i < 3; i ++) {

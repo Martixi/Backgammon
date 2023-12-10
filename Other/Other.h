@@ -13,7 +13,6 @@ void Translate(int NumberINT);
 int inputCheck(int zn);
 int RollInput(int input);
 int PlayerPoleInput();
-int min(int a, int b);
 void enter();
 
 
